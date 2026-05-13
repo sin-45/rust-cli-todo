@@ -3,8 +3,8 @@ use std::io::{self, Write};
 enum Command {
     Add(String),
     List(bool),
-    Done(usize),
-    Delete(usize),
+    Done(String),
+    Delete(String),
     Exit
 }
 
@@ -63,8 +63,8 @@ impl TodoList {
         }
     }
 
-    fn done(&mut self, id: usize) -> Result<(), &'static str> {
-        if let Some(task) = self.tasks.iter_mut().find(|x| x.id == id) {
+    fn done(&mut self, id: String) -> Result<(), &'static str> {
+        if let Some(task) = self.tasks.iter_mut().find(|x| x.title == id) {
             task.is_completed = true;
             println!("task {} is done", task.title);
             Ok(())
@@ -73,9 +73,10 @@ impl TodoList {
         }
     }
 
-    fn delete(&mut self, id: usize) -> Result<(), &'static str> {
-        if let Some(task) = self.tasks.iter_mut().find(|x| x.id == id && !x.deleted) {
+    fn delete(&mut self, id: String) -> Result<(), &'static str> {
+        if let Some(task) = self.tasks.iter_mut().find(|x| x.title == id && !x.deleted) {
             task.deleted = true;
+            println!("task {} is deleted", task.title);
             Ok(())
         } else {
             Err("Task not found.")
@@ -106,13 +107,11 @@ fn parse_command(input: &str) -> Result<Command, String> {
             }
         }
         "done" => {
-            let id = args.first().ok_or("No ID provided for done command")?
-                .parse::<usize>().map_err(|_| "Invalid ID format")?;
+            let id: String = args.first().ok_or("No ID provided for done command")?.to_string();
             Ok(Command::Done(id))
         }
         "del" => {
-            let id = args.first().ok_or("No ID provided for delete command")?
-                .parse::<usize>().map_err(|_| "Invalid ID format")?;
+            let id: String = args.first().ok_or("No ID provided for delete command")?.to_string();
             Ok(Command::Delete(id))
         }
         "exit" => Ok(Command::Exit),
@@ -148,15 +147,11 @@ fn main() {
             Command::Done(id) => {
                 if let Err(e) = todo.done(id) {
                     println!("err -> {}", e);
-                } else {
-                    println!("task {} is done", id);
                 }
             }
             Command::Delete(id) => {
                 if let Err(e) = todo.delete(id) {
                     println!("err -> {}", e);
-                } else {
-                    println!("task {} is deleted", id);
                 }
             }
             Command::Exit => {
