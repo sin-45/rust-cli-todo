@@ -10,6 +10,7 @@ enum Command {
     List(bool),
     Done(String),
     Delete(String),
+    Save,
     Exit
 }
 
@@ -144,6 +145,7 @@ fn parse_command(input: &str) -> Result<Command, String> {
                 Ok(Command::Delete(args.join(" ")))
             }
         }
+        "save" => Ok(Command::Save),
         "exit" => Ok(Command::Exit),
         _ => Err(format!("Unknown command: {}", cmd))
     }
@@ -152,6 +154,12 @@ fn parse_command(input: &str) -> Result<Command, String> {
 
 fn main() {
     let mut todo = TodoList::new();
+    println!("todo.txtをloadしますか？（y/n）: ");
+    let mut input: String = String::new();
+    io::stdin().read_line(&mut input).unwrap();
+    if input.trim().to_lowercase() == "y" {
+        todo.load();
+    }
     loop {
         print!("> ");
         io::stdout().flush().unwrap();
@@ -183,7 +191,13 @@ fn main() {
                     println!("err -> {}", e);
                 }
             }
+            Command::Save => {
+                todo.save();
+                println!("Tasks saved to {}", FILE_PATH);
+            }
             Command::Exit => {
+                todo.save();
+                println!("Tasks saved to {}", FILE_PATH);
                 println!("Exiting...");
                 break;
             }
