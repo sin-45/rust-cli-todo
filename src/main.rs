@@ -50,6 +50,7 @@ impl TodoList {
             }
         }
     }
+    
     fn save(&self) {
         let mut file = File::create(FILE_PATH).expect("Failed to create file");
         for task in &self.tasks {
@@ -58,15 +59,23 @@ impl TodoList {
         }        
     }
 
+    fn check_list(&self, title: &str) -> bool {
+        self.tasks.iter().any(|x| x.title == title)
+    }
+
     fn add_task(&mut self, title: String) {
         let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        if self.check_list(&title) {
+            println!("task {} is already exists", title);
+            return;
+        }
+        println!("add task: {} ({})", title, now);
         let task = Task {
-            timestamp: now.clone(),
-            title: title.clone(),
+            timestamp: now,
+            title: title,
             is_completed: false
         };
         self.tasks.push(task);
-        println!("add task: {} ({})", title, now);
     }
 
     fn list(&self, is_all: bool) {
@@ -150,7 +159,6 @@ fn parse_command(input: &str) -> Result<Command, String> {
         _ => Err(format!("Unknown command: {}", cmd))
     }
 }
-
 
 fn main() {
     let mut todo = TodoList::new();
